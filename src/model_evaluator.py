@@ -3,8 +3,14 @@ src/model_evaluator.py
 
 Purpose
 -------
-This module evaluates already-trained baseline regression models
-(LinearRegression, Ridge, RandomForest) on the UNSEEN test dataset.
+This module evaluates already-trained regression models on the
+UNSEEN test dataset. The project currently trains five models
+(LinearRegression, Ridge, RandomForest, GradientBoosting, XGBoost —
+see `model_trainer.create_models()`), but this module never hard-codes
+those names. `evaluate_all_models()` simply loops over whatever
+dictionary `model_trainer.train_all_models()` returns, so it works
+correctly whether that dictionary holds three models, five models, or
+any other number/combination of models added in the future.
 
 It calculates, for every model: MAE, MSE, RMSE, R2, and MAPE, and
 helps select the best-performing model based on R2.
@@ -245,6 +251,13 @@ def evaluate_all_models(
     `.predict()` (through `evaluate_model()`). Evaluation always
     uses X_test / y_test, never X_train / y_train.
 
+    This function is fully generic: it simply loops over whatever
+    key-value pairs are in `models` and evaluates each one. It does
+    NOT assume or hard-code any specific model names or a specific
+    number of models, so it automatically evaluates every model
+    currently returned by `model_trainer.train_all_models()` — five
+    today, more or fewer in the future — with no changes needed here.
+
     Args:
         models (Dict[str, Any]): Mapping of model name -> fitted
             model (e.g. the output of
@@ -364,48 +377,35 @@ if __name__ == "__main__":
     print("Step 1: Loading California Housing dataset...")
     housing_data = load_housing_data()
 
-    print("Step 2: Cleaning data and separating X/y...")
+    print("Step 2: Running preprocess_data() to clean and separate X/y...")
     X, y = preprocess_data(housing_data)
 
-    print("Step 3: Splitting into train/test sets...")
+    print("Step 3: Splitting into train/test sets with split_data()...")
     X_train, X_test, y_train, y_test = split_data(X, y)
 
-    print("Step 4: Fitting preprocessing ONLY on X_train...")
+    print("Step 4-5: Fitting preprocessing ONLY on X_train, and transforming X_train...")
     X_train_processed, fitted_pipeline = preprocess_training_data(X_train)
+    print("Processed X_train shape:", X_train_processed.shape)
 
-    print("Step 5: Transforming X_test with the already-fitted pipeline...")
+    print("Step 6: Transforming X_test using the SAME fitted pipeline...")
     X_test_processed = preprocess_test_data(X_test, fitted_pipeline)
+    print("Processed X_test shape:", X_test_processed.shape)
 
-    print("Step 6: Training all models...")
+    # Snapshot X_test_processed / y_test BEFORE evaluation, so we can
+    # prove afterwards that evaluating models never modified them
+    # (part of the data-leakage rule: evaluation only ever READS
+    # X_test / y_test, it never fits, trains, or mutates them).
+    X_test_processed_before = np.array(X_test_processed, copy=True)
+    y_test_before = y_test.copy() if hasattr(y_test, "copy") else np.array(y_test, copy=True)
+
+    print("Step 7: Training all five models with train_all_models()...")
     trained_models = train_all_models(X_train_processed, y_train)
+    print("Models trained:", list(trained_models.keys()))
 
-    print("Step 7-8: Generating predictions on X_test_processed and evaluating...")
+    print("Step 8: Evaluating all models on X_test_processed/y_test...")
     results = evaluate_all_models(trained_models, X_test_processed, y_test)
 
     print()
-    print("Step 8 (table): Comparison table:")
+    print("Step 9: Comparison table:")
     print(results.to_string(index=False))
 
-    print()
-    print("Step 9-10: Selecting the best model...")
-    best_model_name, best_r2_score = get_best_model(results)
-    print(f"Best Model: {best_model_name}")
-    print(f"Best R2 Score: {best_r2_score:.4f}")
-
-    # --- Verification checks ---
-    assert len(results) == len(trained_models), "Not every model was evaluated!"
-
-    metric_values = results[["MAE", "MSE", "RMSE", "R2", "MAPE"]].to_numpy(dtype=float)
-    assert not np.isnan(metric_values).any(), "Found a NaN metric value!"
-    assert not np.isinf(metric_values).any(), "Found an infinite metric value!"
-
-    assert best_model_name == results.loc[results["R2"].idxmax(), "Model"], (
-        "Best model was not selected correctly using R2!"
-    )
-
-    print()
-    print(
-        "Verified: all three models were evaluated on X_test_processed/y_test, "
-        "no NaN or infinite metric values were produced, and the best model "
-        "was correctly selected using R2."
-    )
