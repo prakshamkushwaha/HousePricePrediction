@@ -8,6 +8,8 @@ the House Price Prediction project:
     1. Linear Regression
     2. Ridge Regression
     3. Random Forest Regressor
+    4. Gradient Boosting Regressor
+    5. XGBoost Regressor
 
 This module does NOT:
     - evaluate models (no MAE, MSE, RMSE, R², MAPE, etc.)
@@ -17,6 +19,14 @@ This module does NOT:
     - create charts or the dashboard
 
 Those responsibilities belong to separate modules.
+
+A note on XGBoost
+--------------------
+`XGBRegressor` comes from the third-party `xgboost` package, which is
+not part of scikit-learn and must be installed separately
+(`pip install xgboost`). If it is missing, this module fails LOUDLY
+with a clear `ImportError` as soon as it is imported, instead of
+silently training only four models. See the import block below.
 """
 
 import logging
@@ -24,10 +34,23 @@ from typing import Any, Dict, Union
 
 import numpy as np
 import pandas as pd
-from sklearn.ensemble import RandomForestRegressor
+from sklearn.ensemble import GradientBoostingRegressor, RandomForestRegressor
 from sklearn.linear_model import LinearRegression, Ridge
 
 logger = logging.getLogger(__name__)
+
+try:
+    from xgboost import XGBRegressor
+except ImportError as import_error:
+    logger.error(
+        "model_trainer: could not import XGBRegressor from the "
+        "'xgboost' package. Install it with: pip install xgboost"
+    )
+    raise ImportError(
+        "The 'xgboost' package is required by src/model_trainer.py "
+        "(for XGBRegressor) but is not installed in this environment. "
+        "Install it with: pip install xgboost"
+    ) from import_error
 
 # Accepted input types for training data, used in type hints below.
 FeatureData = Union[np.ndarray, pd.DataFrame]
@@ -84,11 +107,20 @@ def create_models() -> Dict[str, Any]:
 
     Returns:
         Dict[str, Any]: A dictionary mapping model name to an
-        unfitted scikit-learn regressor:
+        unfitted regressor:
             - "LinearRegression": LinearRegression()
             - "Ridge": Ridge(alpha=1.0)
             - "RandomForest": RandomForestRegressor(
                   n_estimators=100, random_state=42, n_jobs=-1
+              )
+            - "GradientBoosting": GradientBoostingRegressor(
+                  n_estimators=100, learning_rate=0.1, max_depth=3,
+                  random_state=42
+              )
+            - "XGBoost": XGBRegressor(
+                  n_estimators=100, learning_rate=0.1, max_depth=3,
+                  random_state=42, objective="reg:squarederror",
+                  n_jobs=-1
               )
     """
     models: Dict[str, Any] = {
@@ -97,6 +129,20 @@ def create_models() -> Dict[str, Any]:
         "RandomForest": RandomForestRegressor(
             n_estimators=100,
             random_state=42,
+            n_jobs=-1,
+        ),
+        "GradientBoosting": GradientBoostingRegressor(
+            n_estimators=100,
+            learning_rate=0.1,
+            max_depth=3,
+            random_state=42,
+        ),
+        "XGBoost": XGBRegressor(
+            n_estimators=100,
+            learning_rate=0.1,
+            max_depth=3,
+            random_state=42,
+            objective="reg:squarederror",
             n_jobs=-1,
         ),
     }
@@ -114,8 +160,8 @@ def train_model(model: Any, X_train: FeatureData, y_train: TargetData) -> Any:
     Fit a single, already-created model on the training data.
 
     Args:
-        model: An unfitted scikit-learn regressor (must implement
-            `.fit()`).
+        model: An unfitted regressor (must implement `.fit()`) —
+            e.g. a scikit-learn estimator or an XGBRegressor.
         X_train: The training features.
         y_train: The training target values.
 
@@ -159,7 +205,9 @@ def train_all_models(X_train: FeatureData, y_train: TargetData) -> Dict[str, Any
 
     Returns:
         Dict[str, Any]: A dictionary mapping model name to fitted
-        model, using the same names as `create_models()`.
+        model, using the same names as `create_models()`
+        ("LinearRegression", "Ridge", "RandomForest",
+        "GradientBoosting", "XGBoost").
 
     Raises:
         TypeError: If `X_train`/`y_train` are not the expected types.
@@ -217,12 +265,14 @@ if __name__ == "__main__":
     X_train_processed, fitted_pipeline = preprocess_training_data(X_train)
     print("Processed X_train shape:", X_train_processed.shape)
 
-    print("Step 5: Training all models...")
+    print("Step 5: Training all five models...")
     trained_models = train_all_models(X_train_processed, y_train)
 
     print()
-    print("Models trained:", list(trained_models.keys()))
+    print("Model names:", list(trained_models.keys()))
     print()
+
+    print("Step 6: Verifying every model is fitted with check_is_fitted()...")
     for model_name, fitted_model in trained_models.items():
         try:
             check_is_fitted(fitted_model)
@@ -231,4 +281,5 @@ if __name__ == "__main__":
             print(f" - {model_name}: NOT fitted correctly ({error}).")
 
     print()
-    print("All three models trained without errors.")
+    assert len(trained_models) == 5, f"Expected 5 models, got {len(trained_models)}!"
+    print("All five models trained without errors.")
