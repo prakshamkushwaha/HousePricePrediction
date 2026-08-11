@@ -317,3 +317,113 @@ def save_best_model(
         "save_best_model: best model is '%s' (R2=%.4f). Saving model and pipeline...",
         best_model_name, best_r2_score,
     )
+
+    save_model(best_model, MODEL_PATH)
+    save_preprocessing_pipeline(fitted_pipeline, PIPELINE_PATH)
+
+    logger.info(
+        "save_best_model: saved '%s' to '%s' and its preprocessing pipeline to '%s'.",
+        best_model_name, MODEL_PATH, PIPELINE_PATH,
+    )
+
+    return best_model_name, best_r2_score
+
+
+def load_saved_artifacts() -> Tuple[Any, Pipeline]:
+    """
+    Load the previously saved best model and preprocessing pipeline.
+
+    This is a convenience wrapper around `load_model()` +
+    `load_preprocessing_pipeline()`, using the default `MODEL_PATH`
+    and `PIPELINE_PATH` locations, so calling code only needs one
+    function call to get both artifacts back.
+
+    Returns:
+        Tuple[Any, Pipeline]:
+            - best_model: The loaded model.
+            - preprocessing_pipeline: The loaded, fitted
+              preprocessing pipeline.
+
+    Raises:
+        FileNotFoundError: If either `MODEL_PATH` or `PIPELINE_PATH`
+            does not exist.
+        RuntimeError: If loading either file fails for any other
+            reason.
+    """
+    logger.info("load_saved_artifacts: loading saved model and preprocessing pipeline...")
+
+    best_model = load_model(MODEL_PATH)
+    preprocessing_pipeline = load_preprocessing_pipeline(PIPELINE_PATH)
+
+    logger.info("load_saved_artifacts: loaded both artifacts successfully.")
+
+    return best_model, preprocessing_pipeline
+
+
+if __name__ == "__main__":
+    logging.basicConfig(
+        level=logging.INFO,
+        format="%(asctime)s | %(levelname)-8s | %(name)s | %(message)s",
+        datefmt="%Y-%m-%d %H:%M:%S",
+    )
+
+    try:
+        from src.data_loader import load_housing_data
+        from src.data_split import split_data
+        from src.model_evaluator import evaluate_all_models
+        from src.model_trainer import train_all_models
+        from src.preprocessing import (
+            preprocess_data,
+            preprocess_test_data,
+            preprocess_training_data,
+        )
+    except ImportError:
+        from data_loader import load_housing_data
+        from data_split import split_data
+        from model_evaluator import evaluate_all_models
+        from model_trainer import train_all_models
+        from preprocessing import (
+            preprocess_data,
+            preprocess_test_data,
+            preprocess_training_data,
+        )
+
+    print("Step 1: Loading California Housing dataset...")
+    housing_data = load_housing_data()
+
+    print("Step 2: Running preprocess_data()...")
+    X, y = preprocess_data(housing_data)
+
+    print("Step 3: Splitting X and y with split_data()...")
+    X_train, X_test, y_train, y_test = split_data(X, y)
+
+    print("Step 4: Fitting preprocessing ONLY on X_train...")
+    X_train_processed, fitted_pipeline = preprocess_training_data(X_train)
+
+    print("Step 5: Transforming X_test using the same fitted pipeline...")
+    X_test_processed = preprocess_test_data(X_test, fitted_pipeline)
+    print(f"X_train_processed shape: {X_train_processed.shape}")
+    print(f"X_test_processed shape: {X_test_processed.shape}")
+
+    print("Step 6: Training all existing models with train_all_models()...")
+    trained_models = train_all_models(X_train_processed, y_train)
+
+    print("Step 7: Evaluating all existing models with evaluate_all_models()...")
+    evaluation_results = evaluate_all_models(trained_models, X_test_processed, y_test)
+
+    print("Step 8: Saving the best model and pipeline with save_best_model()...")
+    best_model_name, best_r2_score = save_best_model(
+        trained_models, evaluation_results, fitted_pipeline
+    )
+
+    print()
+    print("Step 9: Results")
+    print("Model comparison results:")
+    print(evaluation_results.to_string(index=False))
+    print()
+    print(f"Best model name : {best_model_name}")
+    print(f"Best R2 score   : {best_r2_score:.4f}")
+    print()
+    print(f"Model saved to    : {MODEL_PATH}")
+    print(f"Pipeline saved to : {PIPELINE_PATH}")
+    print("Confirmed: model and preprocessing pipeline were saved successfully.")

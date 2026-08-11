@@ -373,3 +373,41 @@ def predict_from_values(
 
     return predict_house_price(input_df)
 
+
+
+if __name__ == "__main__":
+    print("Testing prediction module...")
+
+    sample_input = {
+        "MedInc": 5.0,
+        "HouseAge": 20.0,
+        "AveRooms": 5.5,
+        "AveBedrms": 1.0,
+        "Population": 1000.0,
+        "AveOccup": 3.0,
+        "Latitude": 34.05,
+        "Longitude": -118.25,
+    }
+
+    print("\nInput values:")
+    for feature, value in sample_input.items():
+        print(f"{feature}: {value}")
+
+    # Verify saved model and preprocessing pipeline can be loaded.
+    model, pipeline = load_prediction_artifacts()
+
+    # Generate prediction using the existing prediction function.
+    predicted_price = predict_from_values(**sample_input)
+
+    # Verify prediction.
+    assert isinstance(predicted_price, (int, float))
+    assert math.isfinite(predicted_price)
+    assert predicted_price >= 0
+
+    print(f"\nPredicted price: ${predicted_price:,.2f}")
+
+    print("\nSaved model loaded successfully.")
+    print("Preprocessing pipeline loaded successfully.")
+    print("Prediction validation passed.")
+    print("\nSUCCESS: predict.py test completed.")
+
