@@ -1,0 +1,203 @@
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600&display=swap");
+@import "tailwindcss";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
+
+:root {
+  --radius: 0.625rem;
+  --background: oklch(1 0 0);
+  --foreground: oklch(0.145 0 0);
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.145 0 0);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.145 0 0);
+  --primary: oklch(0.205 0 0);
+  --primary-foreground: oklch(0.985 0 0);
+  --secondary: oklch(0.97 0 0);
+  --secondary-foreground: oklch(0.205 0 0);
+  --muted: oklch(0.97 0 0);
+  --muted-foreground: oklch(0.556 0 0);
+  --accent: oklch(0.97 0 0);
+  --accent-foreground: oklch(0.205 0 0);
+  --destructive: oklch(0.577 0.245 27.325);
+  --border: oklch(0.922 0 0);
+  --input: oklch(0.922 0 0);
+  --ring: oklch(0.708 0 0);
+}
+
+.dark {
+  --background: oklch(0.145 0 0);
+  --foreground: oklch(0.985 0 0);
+  --card: oklch(0.205 0 0);
+  --card-foreground: oklch(0.985 0 0);
+  --popover: oklch(0.205 0 0);
+  --popover-foreground: oklch(0.985 0 0);
+  --primary: oklch(0.922 0 0);
+  --primary-foreground: oklch(0.205 0 0);
+  --secondary: oklch(0.269 0 0);
+  --secondary-foreground: oklch(0.985 0 0);
+  --muted: oklch(0.269 0 0);
+  --muted-foreground: oklch(0.708 0 0);
+  --accent: oklch(0.269 0 0);
+  --accent-foreground: oklch(0.985 0 0);
+  --destructive: oklch(0.704 0.191 22.216);
+  --border: oklch(1 0 0 / 10%);
+  --input: oklch(1 0 0 / 15%);
+  --ring: oklch(0.556 0 0);
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+}
+
+/* -----------------------------------------------------------------
+ * House Price Prediction page styling.
+ * App.tsx is not modified — every rule below hooks into class names
+ * (Tailwind utilities, or classes rendered by glass-button.tsx) that
+ * already exist in the markup. Unlayered rules here naturally beat
+ * Tailwind's own `@layer utilities`, so no `!important` is needed.
+ * --------------------------------------------------------------- */
+
+body {
+  font-family: "Inter", ui-sans-serif, system-ui, sans-serif;
+}
+
+/* Dark premium background: base tone + soft gold/cyan glows + a
+   subtle dot grid. Overrides the root wrapper's `bg-neutral-950`. */
+.bg-neutral-950 {
+  background-color: #08090d;
+  background-image:
+    radial-gradient(52rem 28rem at 88% -12%, rgba(232, 181, 99, 0.14), transparent 60%),
+    radial-gradient(46rem 26rem at -12% 96%, rgba(79, 209, 197, 0.12), transparent 60%),
+    radial-gradient(rgba(255, 255, 255, 0.09) 1px, transparent 1px);
+  background-size: auto, auto, 22px 22px;
+  background-position: 0 0, 0 0, 0 0;
+}
+
+/* Glass card (the `rounded-2xl` + `bg-white/5` combination is unique
+   to the Property Details card). */
+.rounded-2xl.bg-white\/5 {
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.07), rgba(255, 255, 255, 0.03));
+  box-shadow:
+    0 1px 0 0 rgba(255, 255, 255, 0.06) inset,
+    0 24px 60px -30px rgba(0, 0, 0, 0.8);
+}
+
+/* Glass inputs (the `rounded-lg` + `bg-white/5` combination is
+   unique to the field inputs). */
+.rounded-lg.bg-white\/5 {
+  background: rgba(255, 255, 255, 0.04);
+  transition: background-color 150ms ease, box-shadow 150ms ease;
+}
+
+.rounded-lg.bg-white\/5:hover {
+  background: rgba(255, 255, 255, 0.07);
+}
+
+.rounded-lg.bg-white\/5:focus {
+  background: rgba(255, 255, 255, 0.07);
+  box-shadow: 0 0 0 3px rgba(79, 209, 197, 0.18);
+}
+
+/* Responsive: stack the two-column field grid on narrow screens. */
+@media (max-width: 420px) {
+  .grid-cols-2 {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* -----------------------------------------------------------------
+ * GlassButton support styles.
+ * glass-button.tsx applies these class names itself but never
+ * defines them — they're expected to come from the app's own
+ * stylesheet. The component file is untouched.
+ * --------------------------------------------------------------- */
+
+.all-unset {
+  all: unset;
+  box-sizing: border-box;
+}
+
+.glass-button-wrap {
+  position: relative;
+  display: inline-block;
+}
+
+.glass-button {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.16), rgba(255, 255, 255, 0.05));
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  box-shadow:
+    0 1px 0 0 rgba(255, 255, 255, 0.25) inset,
+    0 12px 30px -14px rgba(0, 0, 0, 0.7);
+  transition: transform 150ms ease, background 150ms ease, box-shadow 150ms ease;
+}
+
+.glass-button:hover {
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.22), rgba(255, 255, 255, 0.08));
+  transform: translateY(-1px);
+}
+
+.glass-button:active {
+  transform: translateY(0) scale(0.98);
+}
+
+.glass-button:focus-visible {
+  outline: 2px solid rgba(79, 209, 197, 0.8);
+  outline-offset: 2px;
+}
+
+.glass-button-text {
+  font-family: "Inter", ui-sans-serif, system-ui, sans-serif;
+  color: #f1f3f8;
+}
+
+.glass-button-shadow {
+  position: absolute;
+  left: 10%;
+  right: 10%;
+  bottom: -0.55rem;
+  height: 0.9rem;
+  background: #e8b563;
+  filter: blur(14px);
+  opacity: 0.32;
+  z-index: -1;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .glass-button,
+  .rounded-lg.bg-white\/5 {
+    transition: none;
+  }
+}

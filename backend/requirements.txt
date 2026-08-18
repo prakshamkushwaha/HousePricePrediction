@@ -1,0 +1,9 @@
+# Minimum dependencies to run the FastAPI backend itself.
+#
+# src/predict.py (called by backend/main.py) additionally needs the
+# project's existing ML dependencies (pandas, scikit-learn, xgboost,
+# joblib, etc.) — those are already listed in the root requirements.txt
+# and are not duplicated here.
+
+fastapi>=0.110
+uvicorn[standard]>=0.29
