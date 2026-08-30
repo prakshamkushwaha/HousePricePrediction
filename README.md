@@ -1,106 +1,270 @@
-# House Price Prediction using Machine Learning
+Automated Property Value Prediction
 
-## Project Overview
-This project focuses on predicting house prices using Machine Learning techniques. Given features of a property (such as location, size, number of rooms, and other relevant attributes), the goal is to build a model that can estimate its market price. The project is structured to support the full ML lifecycle — from raw data ingestion and preprocessing, through model training and evaluation, to eventual result visualization.
+A machine learning application that predicts house values from property and geographic characteristics. The project combines a trained machine learning pipeline with a FastAPI backend and a React + TypeScript frontend.
 
-## Project Objectives
-- Analyze and understand housing data to identify factors that influence price
-- Clean and preprocess raw housing data into a model-ready format
-- Build and evaluate machine learning models for price prediction
-- Provide clear visual reports and insights derived from the data and models
-- Maintain a clean, modular, and reproducible project structure
+Overview
 
-## Key Features
-- Organized project structure separating raw data, processed data, source code, and reports
-- Centralized logging configured in `main.py` for consistent output tracking
-- Dedicated folders for exploratory analysis (`notebooks/`), reusable code (`src/`), and generated visuals (`reports/figures/`)
-- Placeholder `dashboard/` folder reserved for future result visualization
-- Environment-based configuration support via `.env`
+The project follows a complete machine learning workflow:
 
-## Machine Learning Workflow
-The intended end-to-end workflow for this project is as follows:
-1. **Data Collection** — Gather raw housing data and store it in `data/raw/`
-2. **Data Preprocessing** — Clean, transform, and engineer features; save output to `data/processed/`
-3. **Exploratory Data Analysis (EDA)** — Analyze patterns and relationships using notebooks in `notebooks/`
-4. **Model Training** — Train regression models on the processed data (to be implemented in `src/`)
-5. **Model Evaluation** — Assess model performance using appropriate regression metrics
-6. **Reporting** — Generate figures and summaries of findings in `reports/figures/`
-7. **Visualization / Dashboard** — Present results through a dashboard (planned, in `dashboard/`)
+Load and prepare housing data.
 
-> Note: This workflow describes the planned pipeline. See **Current Project Status** below for what has actually been implemented so far.
+Preprocess the input features.
 
-## Technology Stack
-- **Language:** Python
-- **Data Handling:** pandas, numpy
-- **Machine Learning:** scikit-learn
-- **Visualization:** matplotlib, seaborn
-- **Notebooks:** Jupyter
-- **Model Persistence:** joblib
-- **Configuration:** python-dotenv
+Train and evaluate five regression models.
 
-## Project Folder Structure
-```
+Select the best-performing model.
+
+Save the trained model and preprocessing pipeline.
+
+Expose the prediction pipeline through FastAPI.
+
+Connect the API to a React dashboard.
+
+Validate user input before requesting a prediction.
+
+The current best model is Random Forest.
+
+Features
+
+Property value prediction
+
+Data preprocessing and outlier handling
+
+Comparison of five regression models
+
+Saved model and preprocessing pipeline
+
+FastAPI prediction endpoint
+
+React + TypeScript dashboard
+
+Tailwind CSS styling
+
+Glassmorphism interface
+
+Input validation
+
+Loading and error states
+
+Reset functionality
+
+Model performance display
+
+INR-formatted prediction display
+
+Machine Learning Models
+
+Linear Regression
+
+Ridge
+
+Random Forest
+
+Gradient Boosting
+
+XGBoost
+
+Model Results
+
+Model
+
+R² Score
+
+Linear Regression
+
+64.70%
+
+Ridge
+
+64.70%
+
+Random Forest
+
+80.37%
+
+Gradient Boosting
+
+77.68%
+
+XGBoost
+
+77.56%
+
+The documented Random Forest RMSE is 0.507.
+
+Input Features
+
+Median Income
+
+House Age
+
+Average Rooms
+
+Average Bedrooms
+
+Population
+
+Average Occupancy
+
+Latitude
+
+Longitude
+
+The original API feature names are MedInc, HouseAge, AveRooms, AveBedrms, Population, AveOccup, Latitude, and Longitude.
+
+Technology Stack
+
+Machine Learning
+
+Python, pandas, NumPy, scikit-learn, XGBoost, joblib
+
+Backend
+
+FastAPI, Pydantic, Uvicorn
+
+Frontend
+
+React, TypeScript, Vite, Tailwind CSS, shadcn/ui
+
+Project Structure
+
 HousePricePrediction/
-├── data/
-│   ├── raw/
-│   └── processed/
+├── backend/
+│   └── main.py
+├── frontend/
+│   ├── src/
+│   │   ├── components/ui/
+│   │   │   └── glass-button.tsx
+│   │   ├── App.tsx
+│   │   ├── index.css
+│   │   └── main.tsx
+│   └── package.json
+├── models/
+│   ├── best_model.pkl
+│   └── preprocessing_pipeline.pkl
 ├── notebooks/
 ├── src/
-├── dashboard/
-├── models/
-├── reports/
-│   └── figures/
+├── data/
 ├── tests/
 ├── requirements.txt
 ├── README.md
-├── .gitignore
-└── main.py
-```
+└── .gitignore
 
-## Installation Instructions
-1. Clone the repository:
-   ```bash
-   git clone <repository-url>
-   cd HousePricePrediction
-   ```
-2. Create and activate a virtual environment:
-   ```bash
-   python -m venv venv
+Installation
 
-   # Windows
-   venv\Scripts\activate
+Python
 
-   # macOS/Linux
-   source venv/bin/activate
-   ```
-3. Install dependencies:
-   ```bash
-   pip install -r requirements.txt
-   ```
+python -m venv .venv
+.venv\Scripts\Activate.ps1
+pip install -r requirements.txt
 
-## How to Run the Project
-Run the main entry point:
-```bash
-python main.py
-```
-At this stage, running `main.py` displays a welcome message and initializes logging. It serves as the foundation that future data loading, preprocessing, training, and evaluation logic will be built on top of.
+Frontend
 
-## Current Project Status
-This project is currently in the **setup phase**. The folder structure, base configuration files (`requirements.txt`, `.gitignore`), and the `main.py` entry point (with logging and a welcome message) are in place.
+cd frontend
+npm install
 
-**Not yet implemented:**
-- Data collection / raw dataset
-- Data preprocessing and feature engineering
-- Model training
-- Model evaluation
-- Dashboard / visualization layer
+Running the Application
 
-## Future Improvements
-- Source and add the raw housing dataset to `data/raw/`
-- Implement data cleaning and preprocessing pipeline
-- Perform exploratory data analysis in `notebooks/`
-- Implement and train regression models in `src/`
-- Evaluate models using metrics such as RMSE and R²
-- Generate and store visual reports in `reports/figures/`
-- Build out the `dashboard/` for interactive result visualization
-- Add unit tests in `tests/`
+Backend
+
+From the project root:
+
+python backend\main.py
+
+API:
+
+http://127.0.0.1:8000
+
+Interactive API documentation:
+
+http://127.0.0.1:8000/docs
+
+Frontend
+
+In another terminal:
+
+cd frontend
+npm run dev
+
+Open the Vite URL shown in the terminal, normally http://localhost:5173.
+
+API
+
+POST /predict
+
+Example request:
+
+{
+  "MedInc": 5.0,
+  "HouseAge": 20.0,
+  "AveRooms": 5.5,
+  "AveBedrms": 1.0,
+  "Population": 1000.0,
+  "AveOccup": 3.0,
+  "Latitude": 34.05,
+  "Longitude": -118.25
+}
+
+Response:
+
+{
+  "predicted_price_usd": 157605.05
+}
+
+The frontend converts the returned USD value to an INR-formatted display value.
+
+Validation
+
+The dashboard rejects missing or non-numeric values and checks sensible ranges for income, age, rooms, bedrooms, population, occupancy, latitude, and longitude before calling the API.
+
+Prediction Flow
+
+User input
+   ↓
+React dashboard
+   ↓
+Input validation
+   ↓
+POST /predict
+   ↓
+FastAPI
+   ↓
+predict_from_values()
+   ↓
+Preprocessing pipeline
+   ↓
+Saved best model
+   ↓
+Prediction
+   ↓
+React dashboard
+   ↓
+INR display
+
+Limitations
+
+Prediction quality depends on the training data and available features.
+
+The result is a model estimate, not a professional property valuation.
+
+The local frontend depends on the FastAPI server being available.
+
+INR display uses the configured USD-to-INR conversion rather than a live exchange-rate service.
+
+Future Improvements
+
+Deploy the frontend and backend.
+
+Use a live currency exchange-rate source.
+
+Add automated API and prediction tests.
+
+Add richer model evaluation visualizations.
+
+Improve input guidance and accessibility.
+
+Add monitoring and structured logging.
+
+Author
+
+Praksham Kushwaha
